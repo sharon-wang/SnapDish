@@ -25,7 +25,7 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.ibm.watson.developer_cloud:visual-recognition:3.9.1'
-    compile 'org.apache.httpcomponents:httpclient:4.5.3'
+    compile 'commons-io:commons-io:2.5'
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:support-v4:24.2.1'
     testCompile 'junit:junit:4.12'

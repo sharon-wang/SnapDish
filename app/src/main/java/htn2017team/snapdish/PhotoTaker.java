@@ -21,6 +21,7 @@ import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ClassifyImagesOptions;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ImageClassification;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassification;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassifier;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,6 +44,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+
+import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -117,23 +120,19 @@ public class PhotoTaker extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //pick file
-                Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                getIntent.setType("image/*");
-
-                Intent pickIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                pickIntent.setType("image/*");
-
-                Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
-
-                startActivityForResult(chooserIntent, PICK_IMAGE);
+                pickImage();
             }
         });
     }
 
+    public void pickImage() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        startActivityForResult(intent, PICK_IMAGE);
+    }
     @Override
-    public void onActivityResult(int requestCode, int resultCode, final Intent data)
-    {
+    public void onActivityResult(int requestCode, int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             if (data == null) {
                 //Display an error
@@ -146,13 +145,16 @@ public class PhotoTaker extends AppCompatActivity {
                     public void run() {
                         try  {
                             InputStream inputStream = getApplicationContext().getContentResolver().openInputStream(data.getData());
-                            File out = File.createTempFile("afileofanimage", "png");
-                            copyInputStreamToFile(inputStream, out);
+                            File tempFile = File.createTempFile("animagefile", "jpg");
+                            tempFile.deleteOnExit();
+                            FileOutputStream out = new FileOutputStream(tempFile);
+                            IOUtils.copy(inputStream, out);
+
                             VisualRecognition service = new VisualRecognition(VisualRecognition.VERSION_DATE_2016_05_20);
                             service.setApiKey("f56b5021bedba46eef82952c3ef5d1875a8b7cad");
 
                             ClassifyImagesOptions options = new ClassifyImagesOptions.Builder()
-                                    .images(out)
+                                    .images(tempFile)
                                     .build();
                             VisualClassification result = service.classify(options).execute();
                             List<ImageClassification> images = result.getImages();
@@ -168,12 +170,9 @@ public class PhotoTaker extends AppCompatActivity {
                 thread.start();
 
             }
-            catch (Exception e) {
-                Log.e("hi",e.toString());
+            catch(Exception e) {
+                Log.e("watson exc", e.toString());
             }
-
-
-
             //Now you can do whatever you want with your inpustream, save it as file, upload to a server, decode a bitmap...
         }
     }
@@ -227,6 +226,36 @@ public class PhotoTaker extends AppCompatActivity {
             } catch (IOException e) {
                 Log.d(TAG, "Error accessing file: " + e.getMessage());
             }
+
+            Thread thread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try  {
+
+                        VisualRecognition service = new VisualRecognition(VisualRecognition.VERSION_DATE_2016_05_20);
+                        service.setApiKey("f56b5021bedba46eef82952c3ef5d1875a8b7cad");
+
+                        ClassifyImagesOptions options = new ClassifyImagesOptions.Builder()
+                                .images(pictureFile)
+                                .classifierIds("food")
+                                .build();
+                        VisualClassification result = service.classify(options).execute();
+                        List<ImageClassification> images = result.getImages();
+                        for (int i = 0; i < images.size(); i++) {
+                            List<VisualClassifier> classifiers = images.get(i).getClassifiers();
+                            for (int j = 0; j < classifiers.size(); j++) {
+                                List<VisualClassifier.VisualClass> classes = classifiers.get(j).getClasses();
+                                Log.e("most relevant:", classes.get(0).getName() + " : " + classes.get(0).getScore());
+                            }
+                        };
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            thread.start();
         }
     };
 
