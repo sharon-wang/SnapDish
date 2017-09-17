@@ -51,4 +51,5 @@
                 android:layout_gravity="left|bottom"
                 android:text="Gallery" />
     </FrameLayout>
+
 </LinearLayout>

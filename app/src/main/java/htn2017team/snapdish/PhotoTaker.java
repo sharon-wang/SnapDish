@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Layout;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -44,6 +45,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import org.apache.commons.io.IOUtils;
 
@@ -65,6 +67,8 @@ public class PhotoTaker extends AppCompatActivity {
     private final String RETAKE_IMAGE = "resnap";
     private final String TAKE_IMAGE = "snap";
     private File pictureFile;
+    private FrameLayout cameraLayout;
+    private FrameLayout suggestionLayout;
 
     private enum CameraState {
         FROZEN_IMAGE, READY
@@ -84,6 +88,8 @@ public class PhotoTaker extends AppCompatActivity {
         Button button = (Button) findViewById(R.id.button1);
         submitButton = (Button) findViewById(R.id.button_submit);
         shutterButton = (Button) findViewById(R.id.button_capture);
+        cameraLayout = (FrameLayout) findViewById(R.id.camera_preview);
+//        suggestionLayout = (FrameLayout) findViewById(R.id.suggestion);
 
         // Create our Preview view and set it as the content of our activity.
         mCamera.setDisplayOrientation(90);
@@ -113,6 +119,11 @@ public class PhotoTaker extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // TODO: send the current frozen image to IBM Watson
+                Intent intent = new Intent(PhotoTaker.this, RecipeSuggestion.class);
+                startActivity(intent);
+//                cameraLayout.setVisibility(View.GONE);
+//                suggestionLayout.setVisibility(View.VISIBLE);
+
             }
         });
 
