@@ -57,7 +57,7 @@ import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
 
 public class PhotoTaker extends AppCompatActivity {
-    private Camera mCamera;
+    private Camera mCamera = null;
     private CameraPreview cameraPreview;
     private Button shutterButton;
     private Button submitButton;
@@ -77,20 +77,19 @@ public class PhotoTaker extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_phototaker);
 
-        //pick file
-        Button button = (Button) findViewById(R.id.button1);
-
         // Create an instance of Camera
         mCamera = getCameraInstance();
+
+        //pick file
+        Button button = (Button) findViewById(R.id.button1);
+        submitButton = (Button) findViewById(R.id.button_submit);
+        shutterButton = (Button) findViewById(R.id.button_capture);
 
         // Create our Preview view and set it as the content of our activity.
         mCamera.setDisplayOrientation(90);
         cameraPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(cameraPreview);
-
-        submitButton = (Button) findViewById(R.id.button_submit);
-        shutterButton = (Button) findViewById(R.id.button_capture);
 
         shutterButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -182,6 +181,9 @@ public class PhotoTaker extends AppCompatActivity {
         Camera c = null;
         try {
             c = Camera.open(); // attempt to get a Camera instance
+        }
+        catch (RuntimeException e) {
+            
         }
         catch (Exception e){
             // Camera is not available (in use or does not exist)
