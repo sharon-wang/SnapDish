@@ -75,22 +75,6 @@ public class PhotoTaker extends AppCompatActivity {
         //pick file
         Button button = (Button) findViewById(R.id.button1);
 
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                //pick file
-                Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                getIntent.setType("image/*");
-
-                Intent pickIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                pickIntent.setType("image/*");
-
-                Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
-
-                startActivityForResult(chooserIntent, PICK_IMAGE);
-            }
-        });
-
         // Create an instance of Camera
         mCamera = getCameraInstance();
 
@@ -125,6 +109,22 @@ public class PhotoTaker extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // TODO: send the current frozen image to IBM Watson
+            }
+        });
+
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                //pick file
+                Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                getIntent.setType("image/*");
+
+                Intent pickIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                pickIntent.setType("image/*");
+
+                Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
+
+                startActivityForResult(chooserIntent, PICK_IMAGE);
             }
         });
     }
@@ -229,7 +229,7 @@ public class PhotoTaker extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        releaseCamera();              // release the camera immediately on pause event
+        //releaseCamera();              // release the camera immediately on pause event
     }
 
     private void releaseCamera(){
