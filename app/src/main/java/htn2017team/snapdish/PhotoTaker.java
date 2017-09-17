@@ -19,6 +19,7 @@ import android.widget.Button;
 
 import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ClassifyImagesOptions;
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ImageClassification;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassification;
 
 import java.io.File;
@@ -46,6 +47,7 @@ import android.widget.FrameLayout;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import static android.content.ContentValues.TAG;
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
@@ -147,14 +149,16 @@ public class PhotoTaker extends AppCompatActivity {
                             File out = File.createTempFile("afileofanimage", "png");
                             copyInputStreamToFile(inputStream, out);
                             VisualRecognition service = new VisualRecognition(VisualRecognition.VERSION_DATE_2016_05_20);
-                            service.setApiKey("<api-key>");
+                            service.setApiKey("f56b5021bedba46eef82952c3ef5d1875a8b7cad");
 
-                            System.out.println("Classify an image");
                             ClassifyImagesOptions options = new ClassifyImagesOptions.Builder()
                                     .images(out)
                                     .build();
                             VisualClassification result = service.classify(options).execute();
-                            Log.e("l", result.toString());
+                            List<ImageClassification> images = result.getImages();
+                            for (int i = 0; i < images.size(); i++) {
+                                Log.e("l", images.get(i).toString());
+                            };
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
