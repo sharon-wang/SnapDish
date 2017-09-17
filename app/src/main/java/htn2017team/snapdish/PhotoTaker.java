@@ -1,6 +1,5 @@
 package htn2017team.snapdish;
 
-
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,10 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -21,14 +17,19 @@ import static android.content.ContentValues.TAG;
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
 public class PhotoTaker extends AppCompatActivity {
     private Camera mCamera;
     private CameraPreview cameraPreview;
     private Button shutterButton;
+    private Button submitButton;
+    private CameraState currentCameraState = CameraState.READY;
+    private final String RETAKE_IMAGE = "resnap";
+    private final String TAKE_IMAGE = "snap";
+    private File pictureFile;
+
+    private enum CameraState {
+        FROZEN_IMAGE, READY
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,20 +45,40 @@ public class PhotoTaker extends AppCompatActivity {
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(cameraPreview);
 
+        submitButton = (Button) findViewById(R.id.button_submit);
         shutterButton = (Button) findViewById(R.id.button_capture);
+
         shutterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mCamera.takePicture(null, null, mPicture);
+                if (currentCameraState.equals(CameraState.READY)) {
+                    mCamera.takePicture(null, null, mPicture);
+                    shutterButton.setText(RETAKE_IMAGE);
+                    submitButton.setVisibility(View.VISIBLE);
+                    currentCameraState = CameraState.FROZEN_IMAGE;
+                }
+                else if (currentCameraState.equals(CameraState.FROZEN_IMAGE)) {
+                    mCamera.startPreview();
+                    shutterButton.setText(TAKE_IMAGE);
+                    submitButton.setVisibility(View.INVISIBLE);
+                    currentCameraState = CameraState.READY;
+                }
             }
         });
+
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // TODO: send the current frozen image to IBM Watson
+            }
+        });
+
     }
 
     /** A safe way to get an instance of the Camera object. */
     public static Camera getCameraInstance(){
         Camera c = null;
         try {
-
             c = Camera.open(); // attempt to get a Camera instance
         }
         catch (Exception e){
@@ -73,7 +94,7 @@ public class PhotoTaker extends AppCompatActivity {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
 
-            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+            pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
             if (pictureFile == null){
                 Log.d(TAG, "Error creating media file, check storage permissions.");
                 return;
